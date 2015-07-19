@@ -12,7 +12,6 @@ We begin this report by loading the required libraries. The result of a `session
 
 ```{r preambule}
 require(knitr) # for its function kable
-require(ggplot2) # plots
 ```
 
 ## Loading and preprocessing the data
@@ -66,20 +65,56 @@ The mean of the total number of steps is given by the following command, which c
 
 ## What is the average daily activity pattern?
 
-in the following chink of code, we used the function `geom_smooth` to give a representation of the average daily pattern of activity.
+In the following chunk of code, we both compute and propose a graphical representation of the average daily activity. For each "interval", we compute the average daily activity at this time point by taking the mean of all activities at said point.
 
 ```{r daily_pattern}
-qplot(x=interval, y=steps, groups=date, geom="line", data=x) + 
-  geom_smooth()
+# An empty frame
+plot(steps ~ interval, data=x, pch=16, type="n")
+# Activities per day
+for (day in unique(x$date)) 
+  lines(steps ~ interval, data=subset(x,date==day), 
+       pch=16, col=sample(colors(),1))
+
+# The mean activity in bright red
+mean.activity <- aggregate(x$steps,list(x$interval),mean,na.rm=TRUE)
+lines(mean.activity, col="red2", lwd=3)
 ```
 
 
 ## Imputing missing values
 
+Since whole days are missing, we simply replace the missing activity by the mean activity previously computed.
 
+```{r impute.mean}
+x$steps[is.na(x$steps)] <- mean.activity$x
+```
 
 ## Are there differences in activity patterns between weekdays and weekends?
 
+Finally, we use the function `weekdays` [^1] to create a factor variable with two levels : `weekday` and `weekend`.
+
+[^1]: set in French for the moment
+
+```{r week.days}
+x$DATE <- as.Date(x$date)
+x$WEEKDAY <- weekdays(x$DATE)
+x$WD <- factor(ifelse(weekdays(x$DATE) %in% c("samedi","dimanche"), 
+               "weekend", "weekday"))
+
+x.weekday <- subset(x, WD=="weekday")
+x.weekend <- subset(x, WD=="weekend")
+
+```
+
+We can therefore test if the person on which the measurements were made had a different activity during the weekend than during the rest of the week.
+
+```{r}
+tot.step.weekday <- aggregate(x.weekday$steps, list(x.weekday$date), sum)$x
+tot.step.weekend <- aggregate(x.weekend$steps, list(x.weekend$date), sum)$x
+t.test(tot.step.weekday, tot.step.weekend)
+```
+
+The conclusion is that the person whose activity was measured is more active during the weekend.
 
 ## Session Info
 
