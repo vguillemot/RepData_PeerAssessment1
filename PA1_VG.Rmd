@@ -1,0 +1,89 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+author: Vincent Guillemot
+date: "19/07/2015"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+We begin this report by loading the required libraries. The result of a `sessionInfo()`, giving the version of R, the packages used for the analysis, the OS, etc. is given at the end of this report.
+
+```{r preambule}
+require(knitr) # for its function kable
+require(ggplot2) # plots
+```
+
+## Loading and preprocessing the data
+
+We begin by unzipping the compressed folder with `unz` and reading `activity.csv` with the function `read.csv`. This first version of the raw dataset is called `x`.
+
+```{r load.data}
+x <- read.csv(unz("activity.zip", "activity.csv")) 
+```
+
+Let us take a first look at `x`:
+
+ * it is a ``r class(x)``,
+ * it has `r nrow(x)` rows,
+ * and `r ncol(x)` columns,
+ * and `r nrow(x)-sum(complete.cases(x))` rows contain `NA` values.
+
+The names of the variables (columns) are given by the following command.
+
+```{r x.colnames}
+names(x)
+```
+
+Finally, we would like to know how many days of data are missing and if there are days with missing and non-missing data. To explore the pattern of missing data in `x`, we create a little function, called `na.ratio`, that will give for a given day the number of missing cells divided by the total number of measurement for this day. We present the result of this function in the following table.
+
+```{r na.pattern}
+na.ratio <- function(row) 
+  sum(is.na(row))/length(row)
+
+res <- t(table(aggregate(x$steps, list(x$date), na.ratio)$x))
+kable(res)
+```
+
+There are `r res[2]` whole days of missing data.
+
+
+## What is mean total number of steps taken per day?
+
+To compute the mean number of steps taken per day, we have first to compute, for each day, the total number of steps. This is achieved thanks to the function `aggregate`. We visualize the results with a histogram.
+
+```{r total.steps}
+tot.step <- aggregate(x$steps, list(x$date), sum)
+hist(tot.step$x, xlab="Total number of steps per day", main="")
+```
+
+The mean of the total number of steps is given by the following command, which contains an argument `na.rm=TRUE` to remove the missing data.
+
+```{r mean.steps}
+(mean.steps <- mean(tot.step$x, na.rm=TRUE))
+```
+
+## What is the average daily activity pattern?
+
+in the following chink of code, we used the function `geom_smooth` to give a representation of the average daily pattern of activity.
+
+```{r daily_pattern}
+qplot(x=interval, y=steps, groups=date, geom="line", data=x) + 
+  geom_smooth()
+```
+
+
+## Imputing missing values
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+
+## Session Info
+
+```{r session.info}
+print(sessionInfo(),locale=F)
+```
+
