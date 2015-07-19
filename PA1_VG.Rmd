@@ -106,6 +106,40 @@ x.weekend <- subset(x, WD=="weekend")
 
 ```
 
+We can visualize the difference between the two patterns of activity on the following plots.
+
+```{r plot.diff}
+layout(1:2)
+
+### Weekdays
+plot(steps ~ interval, data=x.weekday, pch=16, type="n",
+     main="Weekday activity")
+# Activities per day
+for (day in unique(x.weekday$date)) 
+  lines(steps ~ interval, data=subset(x.weekday,date==day), 
+       pch=16, col=sample(colors(),1))
+mean.activity.weekday <- aggregate(x.weekday$steps,
+                                   list(x.weekday$interval),
+                                   mean,na.rm=TRUE)
+lines(mean.activity.weekday, col="red2", lwd=3)
+
+### Weekends
+plot(steps ~ interval, data=x.weekend, pch=16, type="n",
+     main="Weekend activity")
+# Activities per day
+for (day in unique(x.weekend$date)) 
+  lines(steps ~ interval, data=subset(x.weekend,date==day), 
+       pch=16, col=sample(colors(),1))
+
+# The mean activity in bright red
+mean.activity.weekend <- aggregate(x.weekend$steps,
+                           list(x.weekend$interval),
+                           mean,na.rm=TRUE)
+lines(mean.activity.weekend, col="red2", lwd=3)
+
+```
+
+
 We can therefore test if the person on which the measurements were made had a different activity during the weekend than during the rest of the week.
 
 ```{r}
